@@ -109,14 +109,14 @@ const OS_TYPE = createElement('p', ['title']);
 const LANG = createElement('p', ['title']);
 const rus = window.localStorage.getItem('langRus');
 
-H1.innerText = 'RSS Виртуальная клавивтура';
+H1.innerText = 'RSS Виртуальная клавиатура';
 OS_TYPE.innerText = 'Клавиатура создана в операционной системе Windows';
 LANG.innerText = 'Для переключения языка комбинация: левые Alt + Ctrl';
 
 // TODO проверить возможность написания в одну строку
 TEXT_AREA.setAttribute('id', 'text');
-TEXT_AREA.setAttribute('rows', '5');
-TEXT_AREA.setAttribute('cols', '50');
+// TEXT_AREA.setAttribute('rows', '5');
+// TEXT_AREA.setAttribute('cols', '50');
 
 document.body.append(CONTAINER);
 CONTAINER.append(H1);
@@ -163,3 +163,37 @@ if (rus) {
     return element;
   });
 }
+
+// добавляем необходимые классы-модификаторы
+const KEY_ROWS = document.querySelectorAll('.keyboard__row');
+KEY_ROWS.forEach((element, index) => {
+  switch (index) {
+    case 0:
+      element.lastElementChild.classList.add('row__key_width', 'row__key_color');
+      break;
+    case 1:
+      element.firstElementChild.classList.add('row__key_color');
+      element.lastElementChild.classList.add('row__key_color');
+      break;
+    case 2:
+      element.firstElementChild.classList.add('row__key_color');
+      element.lastElementChild.classList.add('row__key_width', 'row__key_color');
+      break;
+    case 3:
+      element.firstElementChild.classList.add('row__key_width', 'row__key_color');
+      element.lastElementChild.classList.add('row__key_width', 'row__key_color');
+      element.lastElementChild.previousElementSibling.classList.add('row__key_color');
+      break;
+    case 4:
+      element.children[3].classList.add('row__key_width');
+      for (let i = 0; i < element.children.length; i += 1) {
+        if (i !== 3) element.children[i].classList.add('row__key_color');
+      }
+      element.firstElementChild.classList.add('row__key_width1');
+      element.lastElementChild.classList.add('row__key_width1');
+      break;
+    default:
+      break;
+  }
+  return element;
+});
