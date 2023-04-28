@@ -105,8 +105,14 @@ const CONTAINER = createElement('div', ['container']);
 const H1 = createElement('h1', ['header']);
 const TEXT_AREA = createElement('textarea', ['text-area']);
 const KEYBOARD = createElement('div', ['keyboard']);
+const OS_TYPE = createElement('p', ['title']);
+const LANG = createElement('p', ['title']);
+const rus = window.localStorage.getItem('langRus');
 
 H1.innerText = 'RSS Виртуальная клавивтура';
+OS_TYPE.innerText = 'Клавиатура создана в операционной системе Windows';
+LANG.innerText = 'Для переключения языка комбинация: левые Alt + Ctrl';
+
 // TODO проверить возможность написания в одну строку
 TEXT_AREA.setAttribute('id', 'text');
 TEXT_AREA.setAttribute('rows', '5');
@@ -138,4 +144,22 @@ for (let i = 0; i < 5; i += 1) {
     default:
       break;
   }
+}
+CONTAINER.append(OS_TYPE);
+CONTAINER.append(LANG);
+
+// отображаем нижний регистр клавиатуры и нужный язык
+document.querySelectorAll('.lower').forEach((element) => element.classList.remove('hide'));
+if (rus) {
+  const keyRus = document.querySelectorAll('.key__rus');
+  keyRus.forEach((element) => {
+    element.classList.remove('hide');
+    return element;
+  });
+} else {
+  const keyEng = document.querySelectorAll('.key__eng');
+  keyEng.forEach((element) => {
+    element.classList.remove('hide');
+    return element;
+  });
 }
