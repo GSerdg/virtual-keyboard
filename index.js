@@ -60,6 +60,13 @@ const KEY_TITLE = {
     ],
   },
 };
+const CODE = [
+  ['Backquote', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0', 'Minus', 'Equal', 'Backspace'],
+  ['Tab', 'KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyP', 'BracketLeft', 'BracketRight', 'Backslash', 'Delete'],
+  ['CapsLock', 'KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyG', 'KeyH', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon', 'Quote', 'Enter'],
+  ['ShiftLeft', 'KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma', 'Period', 'Slash', 'ArrowUp', 'ShiftRight'],
+  ['ControlLeft', 'MetaLeft', 'AltLeft', 'Space', 'AltRight', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'ControlRight'],
+];
 
 function createElement(tag, classNameArrow) {
   const ELEM = document.createElement(tag);
@@ -74,7 +81,7 @@ function createKeys(num, elem, rowNumber) {
     const ENG_KEY = createElement('div', ['key__eng', 'hide']);
     let key = RUS_KEY;
     let symbol = KEY_TITLE.rus;
-
+    KEY.setAttribute('id', CODE[rowNumber][j]);
     for (let i = 0; i < 2; i += 1) {
       const UPPER = createElement('span', ['upper', 'hide']);
       const LOWER = createElement('span', ['lower', 'hide']);
@@ -108,6 +115,7 @@ const KEYBOARD = createElement('div', ['keyboard']);
 const OS_TYPE = createElement('p', ['title']);
 const LANG = createElement('p', ['title']);
 const rus = window.localStorage.getItem('langRus');
+let caps = false;
 
 H1.innerText = 'RSS Виртуальная клавиатура';
 OS_TYPE.innerText = 'Клавиатура создана в операционной системе Windows';
@@ -196,4 +204,25 @@ KEY_ROWS.forEach((element, index) => {
       break;
   }
   return element;
+});
+
+// события для клавиатуры
+document.addEventListener('keydown', function (e) {
+  console.log(e.code);
+  const CUP = this.getElementById(e.code);
+  if (e.code === 'Tab' || e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault();
+  if (e.code === 'CapsLock' && caps) {
+    CUP.classList.remove('row__key_active');
+    caps = false;
+    return;
+  }
+  if (e.code === 'CapsLock' && !caps) {
+    caps = true;
+  }
+  CUP.classList.add('row__key_active');
+});
+document.addEventListener('keyup', function (e) {
+  const CUP = this.getElementById(e.code);
+  if (e.code === 'CapsLock') return;
+  CUP.classList.remove('row__key_active');
 });
