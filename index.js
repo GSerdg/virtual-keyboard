@@ -114,8 +114,17 @@ const TEXT_AREA = createElement('textarea', ['text-area']);
 const KEYBOARD = createElement('div', ['keyboard']);
 const OS_TYPE = createElement('p', ['title']);
 const LANG = createElement('p', ['title']);
-const rus = window.localStorage.getItem('langRus');
+let engRus = window.localStorage.getItem('lang');
 let caps = false;
+let shift = false;
+let active;
+
+// Меняет класс hide при изменении регистра
+function makeActiveStyle(newElement) {
+  active.forEach((element) => element.classList.add('hide'));
+  newElement.forEach((element) => element.classList.remove('hide'));
+  active = newElement;
+}
 
 H1.innerText = 'RSS Виртуальная клавиатура';
 OS_TYPE.innerText = 'Клавиатура создана в операционной системе Windows';
@@ -156,22 +165,6 @@ for (let i = 0; i < 5; i += 1) {
 CONTAINER.append(OS_TYPE);
 CONTAINER.append(LANG);
 
-// отображаем нижний регистр клавиатуры и нужный язык
-document.querySelectorAll('.lower').forEach((element) => element.classList.remove('hide'));
-if (rus) {
-  const keyRus = document.querySelectorAll('.key__rus');
-  keyRus.forEach((element) => {
-    element.classList.remove('hide');
-    return element;
-  });
-} else {
-  const keyEng = document.querySelectorAll('.key__eng');
-  keyEng.forEach((element) => {
-    element.classList.remove('hide');
-    return element;
-  });
-}
-
 // добавляем необходимые классы-модификаторы
 const KEY_ROWS = document.querySelectorAll('.keyboard__row');
 KEY_ROWS.forEach((element, index) => {
@@ -206,23 +199,73 @@ KEY_ROWS.forEach((element, index) => {
   return element;
 });
 
+// Проверяем наличие последней раскладки языка
+if (!engRus) {
+  window.localStorage.setItem('lang', 'key__eng');
+  engRus = window.localStorage.getItem('lang');
+}
+// Отображаем нужный язык в нижнем регистре при перезагрузке
+active = document.querySelectorAll('.lower');
+active.forEach((element) => element.classList.remove('hide'));
+document.querySelectorAll(`.${engRus}`).forEach((element) => {
+  element.classList.remove('hide');
+  return element;
+});
+
 // события для клавиатуры
-document.addEventListener('keydown', function (e) {
-  console.log(e.code);
+document.addEventListener('keydown', function add(e) {
   const CUP = this.getElementById(e.code);
   if (e.code === 'Tab' || e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault();
+  // Подсвечивание кнопок при нажатии
   if (e.code === 'CapsLock' && caps) {
     CUP.classList.remove('row__key_active');
     caps = false;
+    if (!shift) makeActiveStyle(document.querySelectorAll('.lower'));
+    if (shift) makeActiveStyle(document.querySelectorAll('.upper'));
     return;
   }
   if (e.code === 'CapsLock' && !caps) {
     caps = true;
+    if (!shift) makeActiveStyle(document.querySelectorAll('.caps'));
+    if (shift) makeActiveStyle(document.querySelectorAll('.upper_caps'));
   }
   CUP.classList.add('row__key_active');
+  // при нажатии Shift
+  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+    shift = true;
+    if (!caps) makeActiveStyle(document.querySelectorAll('.upper'));
+    if (caps) makeActiveStyle(document.querySelectorAll('.upper_caps'));
+  }
+  // При смене языка
+  if ((e.code === 'ControlLeft' && e.altKey) || (e.code === 'AltLeft' && e.ctrlKey)) {
+    document.querySelectorAll(`.${engRus}`).forEach((element) => {
+      element.classList.add('hide');
+      return element;
+    });
+    if (engRus === 'key__eng') {
+      window.localStorage.setItem('lang', 'key__rus');
+      engRus = 'key__rus';
+    } else {
+      window.localStorage.setItem('lang', 'key__eng');
+      engRus = 'key__eng';
+    }
+    document.querySelectorAll(`.${engRus}`).forEach((element) => {
+      element.classList.remove('hide');
+      return element;
+    });
+  }
 });
-document.addEventListener('keyup', function (e) {
+
+document.addEventListener('keyup', function rem(e) {
   const CUP = this.getElementById(e.code);
+  // Отмена подсвечивания кнопок при нажатии
   if (e.code === 'CapsLock') return;
   CUP.classList.remove('row__key_active');
+
+  // при отпускании Shift
+  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+    shift = false;
+    if (!caps) makeActiveStyle(document.querySelectorAll('.lower'));
+    if (caps) makeActiveStyle(document.querySelectorAll('.caps'));
+  }
 });
