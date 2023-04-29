@@ -127,6 +127,8 @@ function makeActiveStyle(newElement) {
 }
 
 function getSymbol(element) {
+  if (element.id === 'enter') return '\n';
+  if (element.id === 'space') return ' ';
   if (element.id === 'tab') return '    ';
   const letter = Array.from(element.querySelector(`.${engRus}`).children);
   let b;
@@ -155,6 +157,38 @@ function writeSymbol(symb) {
     text = TEXT_AREA.value.slice(0, cursor) + symb;
     TEXT_AREA.value = text + TEXT_AREA.value.slice(cursor);
     TEXT_AREA.selectionEnd = cursor + 1;
+  }
+}
+
+function pushCapsLock(element) {
+  if (element.id === 'capslock' && caps) {
+    element.classList.remove('row__key_active');
+    caps = false;
+    if (!shift) makeActiveStyle(document.querySelectorAll('.lower'));
+    if (shift) makeActiveStyle(document.querySelectorAll('.upper'));
+    return;
+  }
+  if (element.id === 'capslock' && !caps) {
+    caps = true;
+    if (!shift) makeActiveStyle(document.querySelectorAll('.caps'));
+    if (shift) makeActiveStyle(document.querySelectorAll('.upper_caps'));
+    element.classList.add('row__key_active');
+  }
+}
+
+function pushShift(element) {
+  if (element.id === 'shiftleft' || element.id === 'shiftright') {
+    shift = true;
+    if (!caps) makeActiveStyle(document.querySelectorAll('.upper'));
+    if (caps) makeActiveStyle(document.querySelectorAll('.upper_caps'));
+  }
+}
+
+function unPushShift(element) {
+  if (element.id === 'shiftleft' || element.id === 'shiftright') {
+    shift = false;
+    if (!caps) makeActiveStyle(document.querySelectorAll('.lower'));
+    if (caps) makeActiveStyle(document.querySelectorAll('.caps'));
   }
 }
 
@@ -252,26 +286,12 @@ document.addEventListener('keydown', function add(e) {
     && e.code !== 'Enter' && e.code !== 'ShiftLeft' && e.code !== 'ShiftRight'
     && e.code !== 'ControlLeft' && e.code !== 'ArrowDown' && e.code !== 'ArrowLeft'
     && e.code !== 'ArrowRight' && e.code !== 'ControlRight' && e.code !== 'Space') e.preventDefault();
-  // Подсвечивание кнопок при нажатии
-  if (e.code === 'CapsLock' && caps) {
-    CUP.classList.remove('row__key_active');
-    caps = false;
-    if (!shift) makeActiveStyle(document.querySelectorAll('.lower'));
-    if (shift) makeActiveStyle(document.querySelectorAll('.upper'));
-    return;
-  }
-  if (e.code === 'CapsLock' && !caps) {
-    caps = true;
-    if (!shift) makeActiveStyle(document.querySelectorAll('.caps'));
-    if (shift) makeActiveStyle(document.querySelectorAll('.upper_caps'));
-  }
+
   CUP.classList.add('row__key_active');
-  // при нажатии Shift
-  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
-    shift = true;
-    if (!caps) makeActiveStyle(document.querySelectorAll('.upper'));
-    if (caps) makeActiveStyle(document.querySelectorAll('.upper_caps'));
-  }
+  // Нажатие CapsLock
+  pushCapsLock(CUP);
+  // Нажатие Shift
+  pushShift(CUP);
   // При смене языка
   if ((e.code === 'ControlLeft' && e.altKey) || (e.code === 'AltLeft' && e.ctrlKey)) {
     document.querySelectorAll(`.${engRus}`).forEach((element) => {
@@ -291,11 +311,10 @@ document.addEventListener('keydown', function add(e) {
     });
   }
 
-  if (/* e.code !== 'Backspace' &&  *//* e.code !== 'Delete' &&  */e.code !== 'CapsLock'
-    && e.code !== 'Enter' && e.code !== 'ShiftLeft' && e.code !== 'ShiftRight'
-    && e.code !== 'ControlLeft' && e.code !== 'ArrowDown' && e.code !== 'ArrowLeft'
-    && e.code !== 'ArrowRight' && e.code !== 'ControlRight' && e.code !== 'Space'
-    && e.code !== 'ArrowUp' && e.code !== 'MetaLeft'
+  if (e.code !== 'CapsLock' && e.code !== 'Enter' && e.code !== 'ShiftLeft'
+    && e.code !== 'ShiftRight' && e.code !== 'ControlLeft' && e.code !== 'ArrowDown'
+    && e.code !== 'ArrowLeft' && e.code !== 'ArrowRight' && e.code !== 'ControlRight'
+    && e.code !== 'Space' && e.code !== 'ArrowUp' && e.code !== 'MetaLeft'
     && e.code !== 'AltLeft' && e.code !== 'AltRight') {
     writeSymbol(getSymbol(CUP));
   }
@@ -308,9 +327,37 @@ document.addEventListener('keyup', function rem(e) {
   CUP.classList.remove('row__key_active');
 
   // при отпускании Shift
-  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
-    shift = false;
-    if (!caps) makeActiveStyle(document.querySelectorAll('.lower'));
-    if (caps) makeActiveStyle(document.querySelectorAll('.caps'));
+  unPushShift(CUP);
+});
+
+// События мыши
+KEYBOARD.addEventListener('mousedown', (e) => {
+  // Отменяем события по клику для сохранения фокуса на textarea
+  const keyboard = e.target.closest('.keyboard');
+  if (!keyboard) return;
+  e.preventDefault();
+  // Обрабатываем нажатие CapsLock и Shift
+  const target = e.target.closest('.row__key');
+  if (!target) return;
+  pushCapsLock(target);
+  pushShift(target);
+
+  if (target.id !== 'capslock' && target.id !== 'shiftleft'
+    && target.id !== 'shiftright' && target.id !== 'controlleft' && target.id !== 'arrowdown'
+    && target.id !== 'arrowleft' && target.id !== 'arrowright' && target.id !== 'controlright'
+    && target.id !== 'arrowup' && target.id !== 'metaleft'
+    && target.id !== 'altleft' && target.id !== 'altright') {
+    writeSymbol(getSymbol(target));
   }
 });
+KEYBOARD.addEventListener('mouseup', (e) => {
+  const target = e.target.closest('.row__key');
+  if (!target) return;
+  unPushShift(target);
+});
+// Ввод по клику
+/* KEYBOARD.addEventListener('click', (e) => {
+  const target = e.target.closest('.row__key');
+  if (!target) return;
+  // Фиксация CapsLock
+}); */

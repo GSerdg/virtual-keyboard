@@ -1,3 +1,6 @@
+html {
+  background-color: #ebd2b2;
+}
 .container {
   flex-direction: column;
   font-family: "Trebuchet MS", "Helvetica", sans-serif;
@@ -38,7 +41,7 @@
   border-radius: 5px;
   cursor: pointer;
   background-color: #25252e;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .row__key:hover {
@@ -51,7 +54,8 @@
 
 .row__key:active,
 .row__key_active {
-  background-color: #64c9be;
+  background-color: #64c9be !important;
+  border-radius: 10px;
 }
 
 
