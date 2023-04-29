@@ -32,28 +32,28 @@ const KEY_TITLE = {
   rus: {
     lower: [
       ['ё', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'Backspace'],
-      ['Tab', 'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ', '\\'],
+      ['Tab', 'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ', '\\', 'Delete'],
       ['CapsLock', 'ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э', 'Enter'],
       ['Shift', 'я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю', '.', '▲', 'Shift'],
       ['Ctrl', 'Win', 'Alt', '', 'Alt', '◄', '▼', '►', 'Ctrl'],
     ],
     upper: [
       ['Ё', '!', '"', '№', ';', '%', ':', '?', '*', '(', ')', '_', '+', 'Backspace'],
-      ['Tab', 'Й', 'Ц', 'У', 'К', 'Е', 'Н', 'Г', 'Ш', 'Щ', 'З', 'Х', 'Ъ', '/'],
+      ['Tab', 'Й', 'Ц', 'У', 'К', 'Е', 'Н', 'Г', 'Ш', 'Щ', 'З', 'Х', 'Ъ', '/', 'Delete'],
       ['CapsLock', 'Ф', 'Ы', 'В', 'А', 'П', 'Р', 'О', 'Л', 'Д', 'Ж', 'Э', 'Enter'],
       ['Shift', 'Я', 'Ч', 'С', 'М', 'И', 'Т', 'Ь', 'Б', 'Ю', ',', '▲', 'Shift'],
       ['Ctrl', 'Win', 'Alt', '', 'Alt', '◄', '▼', '►', 'Ctrl'],
     ],
     caps: [
       ['Ё', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'Backspace'],
-      ['Tab', 'Й', 'Ц', 'У', 'К', 'Е', 'Н', 'Г', 'Ш', 'Щ', 'З', 'Х', 'Ъ', '\\'],
+      ['Tab', 'Й', 'Ц', 'У', 'К', 'Е', 'Н', 'Г', 'Ш', 'Щ', 'З', 'Х', 'Ъ', '\\', 'Delete'],
       ['CapsLock', 'Ф', 'Ы', 'В', 'А', 'П', 'Р', 'О', 'Л', 'Д', 'Ж', 'Э', 'Enter'],
       ['Shift', 'Я', 'Ч', 'С', 'М', 'И', 'Т', 'Ь', 'Б', 'Ю', '.', '▲', 'Shift'],
       ['Ctrl', 'Win', 'Alt', '', 'Alt', '◄', '▼', '►', 'Ctrl'],
     ],
     capsUpper: [
       ['ё', '!', '"', '№', ';', '%', ':', '?', '*', '(', ')', '_', '+', 'Backspace'],
-      ['Tab', 'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ', '/'],
+      ['Tab', 'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ', '/', 'Delete'],
       ['CapsLock', 'ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э', 'Enter'],
       ['Shift', 'я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю', ',', '▲', 'Shift'],
       ['Ctrl', 'Win', 'Alt', '', 'Alt', '◄', '▼', '►', 'Ctrl'],
@@ -81,7 +81,7 @@ function createKeys(num, elem, rowNumber) {
     const ENG_KEY = createElement('div', ['key__eng', 'hide']);
     let key = RUS_KEY;
     let symbol = KEY_TITLE.rus;
-    KEY.setAttribute('id', CODE[rowNumber][j]);
+    KEY.setAttribute('id', CODE[rowNumber][j].toLowerCase());
     for (let i = 0; i < 2; i += 1) {
       const UPPER = createElement('span', ['upper', 'hide']);
       const LOWER = createElement('span', ['lower', 'hide']);
@@ -126,13 +126,45 @@ function makeActiveStyle(newElement) {
   active = newElement;
 }
 
+function getSymbol(element) {
+  if (element.id === 'tab') return '    ';
+  const letter = Array.from(element.querySelector(`.${engRus}`).children);
+  let b;
+  letter.forEach((a) => {
+    if (a.classList.length === 1) b = a.innerText;
+  });
+  return b;
+}
+
+function writeSymbol(symb) {
+  const cursor = TEXT_AREA.selectionStart;
+  let text;
+  if (symb === '    ') {
+    text = TEXT_AREA.value.slice(0, cursor) + symb;
+    TEXT_AREA.value = text + TEXT_AREA.value.slice(cursor);
+    TEXT_AREA.selectionEnd = cursor + 4;
+  } else if (symb === 'Backspace') {
+    text = TEXT_AREA.value.slice(0, cursor - 1);
+    TEXT_AREA.value = text + TEXT_AREA.value.slice(cursor);
+    TEXT_AREA.selectionEnd = cursor - 1;
+  } else if (symb === 'Delete') {
+    text = TEXT_AREA.value.slice(0, cursor);
+    TEXT_AREA.value = text + TEXT_AREA.value.slice(cursor + 1);
+    TEXT_AREA.selectionEnd = cursor;
+  } else {
+    text = TEXT_AREA.value.slice(0, cursor) + symb;
+    TEXT_AREA.value = text + TEXT_AREA.value.slice(cursor);
+    TEXT_AREA.selectionEnd = cursor + 1;
+  }
+}
+
 H1.innerText = 'RSS Виртуальная клавиатура';
 OS_TYPE.innerText = 'Клавиатура создана в операционной системе Windows';
 LANG.innerText = 'Для переключения языка комбинация: левые Alt + Ctrl';
 
 // TODO проверить возможность написания в одну строку
 TEXT_AREA.setAttribute('id', 'text');
-// TEXT_AREA.setAttribute('rows', '5');
+TEXT_AREA.setAttribute('autofocus', '');
 // TEXT_AREA.setAttribute('cols', '50');
 
 document.body.append(CONTAINER);
@@ -214,8 +246,12 @@ document.querySelectorAll(`.${engRus}`).forEach((element) => {
 
 // события для клавиатуры
 document.addEventListener('keydown', function add(e) {
-  const CUP = this.getElementById(e.code);
-  if (e.code === 'Tab' || e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault();
+  const CUP = this.getElementById(e.code.toLowerCase());
+  // Отменяем браузерные события
+  if (e.code !== 'CapsLock' && e.code !== 'ArrowUp'
+    && e.code !== 'Enter' && e.code !== 'ShiftLeft' && e.code !== 'ShiftRight'
+    && e.code !== 'ControlLeft' && e.code !== 'ArrowDown' && e.code !== 'ArrowLeft'
+    && e.code !== 'ArrowRight' && e.code !== 'ControlRight' && e.code !== 'Space') e.preventDefault();
   // Подсвечивание кнопок при нажатии
   if (e.code === 'CapsLock' && caps) {
     CUP.classList.remove('row__key_active');
@@ -254,10 +290,19 @@ document.addEventListener('keydown', function add(e) {
       return element;
     });
   }
+
+  if (/* e.code !== 'Backspace' &&  *//* e.code !== 'Delete' &&  */e.code !== 'CapsLock'
+    && e.code !== 'Enter' && e.code !== 'ShiftLeft' && e.code !== 'ShiftRight'
+    && e.code !== 'ControlLeft' && e.code !== 'ArrowDown' && e.code !== 'ArrowLeft'
+    && e.code !== 'ArrowRight' && e.code !== 'ControlRight' && e.code !== 'Space'
+    && e.code !== 'ArrowUp' && e.code !== 'MetaLeft'
+    && e.code !== 'AltLeft' && e.code !== 'AltRight') {
+    writeSymbol(getSymbol(CUP));
+  }
 });
 
 document.addEventListener('keyup', function rem(e) {
-  const CUP = this.getElementById(e.code);
+  const CUP = this.getElementById(e.code.toLowerCase());
   // Отмена подсвечивания кнопок при нажатии
   if (e.code === 'CapsLock') return;
   CUP.classList.remove('row__key_active');
