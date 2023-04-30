@@ -126,10 +126,69 @@ function makeActiveStyle(newElement) {
   active = newElement;
 }
 
+function arrowDown(point) {
+  let length = 0;
+  let indexColumn = 0;
+  const textArr = TEXT_AREA.value.split('\n');
+
+  if (textArr.length === 0 || textArr.length === 1) return;
+  for (let i = 0; i < textArr.length; i += 1) {
+    length += textArr[i].length;
+    if (length < point) {
+      length += 1;
+    } else {
+      // Индекс элемента в строке массива textArr, перед которым стоит курсор
+      indexColumn = textArr[i].length - (length - point);
+      // Если последняя строка, то ставим каретку в конец
+      if (i === textArr.length - 1) {
+        TEXT_AREA.selectionStart = point + textArr[i].length;
+        return;
+      }
+      if (indexColumn >= textArr[i + 1].length) {
+        TEXT_AREA.selectionStart = point + (textArr[i].length - indexColumn)
+          + 1 + textArr[i + 1].length;
+        return;
+      }
+      TEXT_AREA.selectionStart = point + textArr[i].length + 1;
+      return;
+    }
+  }
+}
+
+function arrowUp(point) {
+  let length = 0;
+  let indexColumn = 0;
+  const textArr = TEXT_AREA.value.split('\n');
+
+  if (textArr.length === 0 || textArr.length === 1) return;
+  if (point <= textArr[0].length) {
+    TEXT_AREA.selectionEnd = 0;
+    return;
+  }
+  for (let i = 0; i < textArr.length; i += 1) {
+    length += textArr[i].length;
+    if (length < point) {
+      length += 1;
+    } else {
+      // Индекс элемента в строке массива textArr, перед которым стоит курсор
+      indexColumn = textArr[i].length - (length - point);
+      if (textArr[i - 1].length <= indexColumn) {
+        TEXT_AREA.selectionEnd = point - indexColumn - 1;
+      } else {
+        TEXT_AREA.selectionEnd = point
+          - (indexColumn + (textArr[i - 1].length - indexColumn) + 1);
+      }
+      return;
+    }
+  }
+}
+
 function getSymbol(element) {
   if (element.id === 'enter') return '\n';
   if (element.id === 'space') return ' ';
   if (element.id === 'tab') return '    ';
+  if (element.id === 'arrowleft' || element.id === 'arrowright'
+    || element.id === 'arrowup' || element.id === 'arrowdown') return element.id;
   const letter = Array.from(element.querySelector(`.${engRus}`).children);
   let b;
   letter.forEach((a) => {
@@ -141,7 +200,16 @@ function getSymbol(element) {
 function writeSymbol(symb) {
   const cursor = TEXT_AREA.selectionStart;
   let text;
-  if (symb === '    ') {
+  if (symb === 'arrowdown') {
+    arrowDown(cursor);
+  } else if (symb === 'arrowup') {
+    arrowUp(cursor);
+  } else if (symb === 'arrowright') {
+    TEXT_AREA.selectionStart = cursor + 1;
+  } else if (symb === 'arrowleft') {
+    if (cursor === 0) return;
+    TEXT_AREA.selectionEnd = cursor - 1;
+  } else if (symb === '    ') {
     text = TEXT_AREA.value.slice(0, cursor) + symb;
     TEXT_AREA.value = text + TEXT_AREA.value.slice(cursor);
     TEXT_AREA.selectionEnd = cursor + 4;
@@ -342,10 +410,8 @@ KEYBOARD.addEventListener('mousedown', (e) => {
   pushCapsLock(target);
   pushShift(target);
 
-  if (target.id !== 'capslock' && target.id !== 'shiftleft'
-    && target.id !== 'shiftright' && target.id !== 'controlleft' && target.id !== 'arrowdown'
-    && target.id !== 'arrowleft' && target.id !== 'arrowright' && target.id !== 'controlright'
-    && target.id !== 'arrowup' && target.id !== 'metaleft'
+  if (target.id !== 'capslock' && target.id !== 'shiftleft' && target.id !== 'shiftright'
+    && target.id !== 'controlleft' && target.id !== 'controlright' && target.id !== 'metaleft'
     && target.id !== 'altleft' && target.id !== 'altright') {
     writeSymbol(getSymbol(target));
   }
