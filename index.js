@@ -421,9 +421,3 @@ KEYBOARD.addEventListener('mouseup', (e) => {
   if (!target) return;
   unPushShift(target);
 });
-// Ввод по клику
-/* KEYBOARD.addEventListener('click', (e) => {
-  const target = e.target.closest('.row__key');
-  if (!target) return;
-  // Фиксация CapsLock
-}); */
